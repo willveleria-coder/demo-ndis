@@ -1,20 +1,3 @@
-// ============================================================
-// branding.js — Central branding config driven by env vars
-// ============================================================
-// Usage:  import { brand } from '@/config/branding'
-//         <h1>{brand.appName}</h1>
-//         <div style={{ background: brand.colors.primary }}>
-//
-// INSTANCES:
-//   maple    → Maple Care Support (existing production client)
-//   demo     → Demo instance with fake data for prospects
-//   veleria  → Your own company site (veleria.com.au)
-//   custom   → White-label base sold to new clients
-//              (all colors auto-derived from VITE_PRIMARY_COLOR
-//               and VITE_STAFF_COLOR — buyer only sets those + name + logo)
-// ============================================================
-
-// --- Color math helpers (no dependencies) ---
 function hexToHSL(hex) {
   const r = parseInt(hex.slice(1, 3), 16) / 255;
   const g = parseInt(hex.slice(3, 5), 16) / 255;

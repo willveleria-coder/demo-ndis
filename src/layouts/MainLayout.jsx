@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { Home, Users, UserCog, Calendar, FileText, AlertTriangle, MessageSquare, Bot, Settings, Bell, Menu, X, LogOut, Clock, CheckCircle, Upload, ClipboardList, Database, RotateCcw, Eye } from 'lucide-react'
+import { Home, Users, UserCog, Calendar, FileText, AlertTriangle, MessageSquare, Bot, Settings, Bell, Menu, X, LogOut, Clock, CheckCircle, Upload, ClipboardList, Database, RotateCcw, Eye, ChevronDown } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
-import BrandLogo, { BrandHeader } from '../components/BrandLogo'
+import BrandLogo from '../components/BrandLogo'
 import { brand } from '../config/branding'
 
 const baseNavItems = [
@@ -18,15 +18,14 @@ const baseNavItems = [
   { id: 'forms', path: '/admin/forms', label: 'Forms', icon: ClipboardList },
   { id: 'feedback', path: '/admin/feedback', label: 'Feedback', icon: MessageSquare },
   { id: 'ai', path: '/admin/ai', label: 'AI', icon: Bot },
-  { id: 'import', path: '/admin/import', label: 'Import Data', icon: Upload },
+  { id: 'import', path: '/admin/import', label: 'Import', icon: Upload },
   { id: 'settings', path: '/admin/settings', label: 'Settings', icon: Settings },
 ]
 
-// Demo-only nav items — only shown when VITE_BRAND_STYLE=demo
 const demoNavItems = [
-  { id: 'sample-data', path: '/admin/sample-data', label: 'Sample Data', icon: Database },
-  { id: 'reset-demo', path: '/admin/reset-demo', label: 'Reset Demo', icon: RotateCcw },
-  { id: 'preview-staff', path: '/login/staff', label: 'Preview Staff View', icon: Eye, external: true },
+  { id: 'sample-data', path: '/admin/sample-data', label: 'Samples', icon: Database },
+  { id: 'reset-demo', path: '/admin/reset-demo', label: 'Reset', icon: RotateCcw },
+  { id: 'preview-staff', path: '/login/staff', label: 'Staff View', icon: Eye },
 ]
 
 const navItems = brand.style === 'demo'
@@ -34,11 +33,13 @@ const navItems = brand.style === 'demo'
   : baseNavItems
 
 const MainLayout = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifications, setNotifications] = useState([])
   const [loadingNotifs, setLoadingNotifs] = useState(true)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
   const notifRef = useRef(null)
+  const userMenuRef = useRef(null)
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useAuth()
@@ -49,7 +50,10 @@ const MainLayout = () => {
   const c = brand.colors
 
   useEffect(() => {
-    function handleClickOutside(e) { if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false) }
+    function handleClickOutside(e) {
+      if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false)
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) setUserMenuOpen(false)
+    }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
@@ -87,92 +91,170 @@ const MainLayout = () => {
   const handleNotifClick = (link) => { setNotifOpen(false); navigate(link) }
   function timeAgo(dateStr) { const d = (new Date() - new Date(dateStr)) / 1000; if (d < 60) return 'Just now'; if (d < 3600) return `${Math.floor(d/60)}m ago`; if (d < 86400) return `${Math.floor(d/3600)}h ago`; if (d < 604800) return `${Math.floor(d/86400)}d ago`; return new Date(dateStr).toLocaleDateString('en-AU') }
 
-  const NotifBell = ({ className = '' }) => (
-    <div className="relative" ref={notifRef}>
-      <button onClick={() => setNotifOpen(!notifOpen)} className={`p-2 rounded-xl bg-gray-100 hover:bg-gray-200 relative ${className}`}>
-        <Bell size={20} className="text-gray-600" />
-        {unreadCount > 0 && <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white font-bold animate-pulse">{unreadCount > 9 ? '9+' : unreadCount}</span>}
-      </button>
-      {notifOpen && (
-        <div className="fixed right-2 top-14 sm:absolute sm:right-0 sm:top-12 w-[calc(100vw-1rem)] sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 z-[100] overflow-hidden">
-          <div className="p-3 border-b border-gray-100 flex items-center justify-between"><h3 className="font-bold text-gray-800 text-sm">Notifications</h3><span className="text-[10px] text-gray-400">{unreadCount} active</span></div>
-          <div className="max-h-96 overflow-y-auto">
-            {loadingNotifs ? (<div className="p-6 text-center"><div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: c.staff, borderTopColor: 'transparent' }} /></div>)
-            : notifications.length > 0 ? notifications.slice(0,15).map(n => (
-              <button key={n.id} onClick={() => handleNotifClick(n.link)} className="w-full p-3 flex items-start gap-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 last:border-0">
-                <div className={`p-1.5 rounded-lg ${n.bg} shrink-0 mt-0.5`}><n.icon size={14} className={n.color} /></div>
-                <div className="flex-1 min-w-0"><p className="font-semibold text-gray-800 text-xs">{n.title}</p><p className="text-[11px] text-gray-500 truncate">{n.desc}</p><p className="text-[10px] text-gray-400 mt-0.5">{timeAgo(n.time)}</p></div>
-              </button>
-            )) : (<div className="p-8 text-center"><CheckCircle size={28} className="text-emerald-400 mx-auto mb-2" /><p className="text-sm text-gray-500 font-medium">All clear!</p></div>)}
-          </div>
-          <div className="p-2 border-t border-gray-100"><button onClick={() => { setNotifOpen(false); navigate('/admin/settings') }} className="w-full py-2 text-xs font-semibold rounded-lg transition-colors" style={{ color: c.primary }}>Notification Settings</button></div>
-        </div>
-      )}
-    </div>
-  )
+  const demoBannerH = brand.style === 'demo' ? 28 : 0
+  const topBarH = 56
 
   return (
-    <div className="min-h-screen" style={{ background: `linear-gradient(to bottom right, ${c.adminBg}, white, ${c.staffBg})` }}>
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-20 left-1/4 w-96 h-96 rounded-full blur-3xl" style={{ backgroundColor: c.primary, opacity: 0.08 }} />
-        <div className="absolute bottom-20 right-1/4 w-96 h-96 rounded-full blur-3xl" style={{ backgroundColor: c.staff, opacity: 0.08 }} />
-      </div>
-      {sidebarOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />}
+    <div className="min-h-screen bg-gray-50">
 
-      <aside className={`fixed top-0 left-0 h-full w-64 bg-white/95 backdrop-blur-xl border-r border-gray-200 z-50 transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
-        <div className="flex flex-col h-full">
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <BrandHeader variant="admin" logoSize={36} subtitle="Support Management" />
-              <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100"><X size={20} className="text-gray-500" /></button>
-            </div>
+      {/* ===== FIXED HEADER BLOCK ===== */}
+      <div className="fixed top-0 left-0 right-0 z-50">
+
+        {/* Demo banner */}
+        {brand.style === 'demo' && (
+          <div className="text-white text-center text-[11px] font-semibold tracking-widest uppercase flex items-center justify-center" style={{ height: demoBannerH, background: c.primary }}>
+            Demo Mode — Sample data for demonstration
           </div>
-          <nav className="flex-1 p-3 overflow-y-auto"><div className="space-y-1">
-            {navItems.map(item => {
-              const badgeCount = notifications.filter(n => (item.id === 'incidents' && n.type === 'incident') || (item.id === 'feedback' && n.type === 'feedback') || (item.id === 'notes' && n.type === 'note') || (item.id === 'staff' && n.type === 'staff')).length
-              return (
-                <NavLink key={item.id} to={item.path} onClick={() => setSidebarOpen(false)}
-                  className={({ isActive }) => `flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-medium text-sm transition-all ${isActive ? 'text-white shadow-lg' : 'text-gray-600 hover:bg-white/80 hover:shadow'}`}
-                  style={({ isActive }) => isActive ? { background: `linear-gradient(to right, ${c.primary}, ${c.adminHover})`, boxShadow: `0 4px 14px -3px ${c.primary}40` } : {}}>
-                  <item.icon size={18} /><span className="flex-1">{item.label}</span>
-                  {badgeCount > 0 && <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-600">{badgeCount}</span>}
-                </NavLink>
-              )
-            })}
-          </div></nav>
-          <div className="p-3 border-t border-gray-200">
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shadow shrink-0" style={{ background: `linear-gradient(to bottom right, ${c.staff}, ${c.staffHover})` }}>{initials}</div>
-                <div className="min-w-0"><p className="font-semibold text-gray-800 text-sm truncate">{displayName}</p><p className="text-[10px] text-gray-400 truncate">{displayEmail}</p></div>
+        )}
+
+        {/* ===== DESKTOP NAV ===== */}
+        <div className="hidden lg:block bg-white border-b border-gray-200 shadow-sm" style={{ height: topBarH }}>
+          <div className="h-full px-5 flex items-center">
+
+            {/* Left: Logo */}
+            <NavLink to="/admin/dashboard" className="flex items-center gap-2.5 shrink-0 mr-8 hover:opacity-80 transition-opacity">
+              <BrandLogo variant="admin" size={30} />
+              <span className="font-bold text-gray-800 text-[15px] tracking-tight">{brand.appName}</span>
+            </NavLink>
+
+            {/* Center: Nav items with icon + short label */}
+            <nav className="flex items-center gap-1 flex-1 overflow-x-auto no-scrollbar">
+              {navItems.map(item => {
+                const active = location.pathname.startsWith(item.path)
+                const badgeCount = notifications.filter(n => (item.id === 'incidents' && n.type === 'incident') || (item.id === 'feedback' && n.type === 'feedback') || (item.id === 'notes' && n.type === 'note') || (item.id === 'staff' && n.type === 'staff')).length
+                return (
+                  <NavLink key={item.id} to={item.path}
+                    className={`relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px] font-semibold whitespace-nowrap transition-all shrink-0 ${active ? 'text-white shadow-md' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'}`}
+                    style={active ? { background: `linear-gradient(135deg, ${c.primary}, ${c.adminHover})`, boxShadow: `0 2px 8px -2px ${c.primary}50` } : {}}>
+                    <item.icon size={16} strokeWidth={active ? 2.5 : 2} />
+                    <span>{item.label}</span>
+                    {badgeCount > 0 && <span className={`w-2 h-2 rounded-full ${active ? 'bg-white/70' : 'bg-red-500'}`} />}
+                  </NavLink>
+                )
+              })}
+            </nav>
+
+            {/* Right: Notifications + User */}
+            <div className="flex items-center gap-1 ml-4 shrink-0">
+              {/* Notifications */}
+              <div className="relative" ref={notifRef}>
+                <button onClick={() => setNotifOpen(!notifOpen)} className="p-2 rounded-lg hover:bg-gray-100 relative transition-colors">
+                  <Bell size={19} className="text-gray-500" />
+                  {unreadCount > 0 && <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-red-500 rounded-full text-[9px] flex items-center justify-center text-white font-bold">{unreadCount > 9 ? '9+' : unreadCount}</span>}
+                </button>
+                {notifOpen && (
+                  <div className="absolute right-0 top-11 w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 z-[100] overflow-hidden">
+                    <div className="p-3 border-b border-gray-100 flex items-center justify-between"><h3 className="font-bold text-gray-800 text-sm">Notifications</h3><span className="text-[10px] text-gray-400">{unreadCount} active</span></div>
+                    <div className="max-h-96 overflow-y-auto">
+                      {loadingNotifs ? (<div className="p-6 text-center"><div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: c.staff, borderTopColor: 'transparent' }} /></div>)
+                      : notifications.length > 0 ? notifications.slice(0,15).map(n => (
+                        <button key={n.id} onClick={() => handleNotifClick(n.link)} className="w-full p-3 flex items-start gap-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 last:border-0">
+                          <div className={`p-1.5 rounded-lg ${n.bg} shrink-0 mt-0.5`}><n.icon size={14} className={n.color} /></div>
+                          <div className="flex-1 min-w-0"><p className="font-semibold text-gray-800 text-xs">{n.title}</p><p className="text-[11px] text-gray-500 truncate">{n.desc}</p><p className="text-[10px] text-gray-400 mt-0.5">{timeAgo(n.time)}</p></div>
+                        </button>
+                      )) : (<div className="p-8 text-center"><CheckCircle size={28} className="text-emerald-400 mx-auto mb-2" /><p className="text-sm text-gray-500 font-medium">All clear!</p></div>)}
+                    </div>
+                    <div className="p-2 border-t border-gray-100"><button onClick={() => { setNotifOpen(false); navigate('/admin/settings') }} className="w-full py-2 text-xs font-semibold rounded-lg transition-colors" style={{ color: c.primary }}>Notification Settings</button></div>
+                  </div>
+                )}
               </div>
-              <button onClick={handleLogout} className="p-1.5 rounded-lg hover:bg-gray-200 transition-colors shrink-0"><LogOut size={16} className="text-gray-500" /></button>
+
+              {/* Divider */}
+              <div className="w-px h-7 bg-gray-200 mx-1" />
+
+              {/* User dropdown */}
+              <div className="relative" ref={userMenuRef}>
+                <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="flex items-center gap-2 p-1.5 pr-2.5 rounded-lg hover:bg-gray-100 transition-colors">
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold" style={{ background: `linear-gradient(135deg, ${c.primary}, ${c.adminHover})` }}>{initials}</div>
+                  <ChevronDown size={13} className="text-gray-400" />
+                </button>
+                {userMenuOpen && (
+                  <div className="absolute right-0 top-11 w-56 bg-white rounded-xl shadow-xl border border-gray-200 z-[100] overflow-hidden">
+                    <div className="p-3 border-b border-gray-100">
+                      <p className="font-semibold text-gray-800 text-sm">{displayName}</p>
+                      <p className="text-xs text-gray-400 truncate">{displayEmail}</p>
+                    </div>
+                    <div className="p-1">
+                      <button onClick={() => { setUserMenuOpen(false); navigate('/admin/settings') }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"><Settings size={15} /> Settings</button>
+                      <button onClick={handleLogout} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"><LogOut size={15} /> Sign out</button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </aside>
 
-      <div className="lg:pl-64 min-h-screen flex flex-col relative z-10">
-        {brand.style === 'demo' && (
-          <div className="bg-indigo-600 text-white text-center py-1.5 text-xs font-semibold tracking-wide z-40 relative">
-            DEMO MODE — This instance contains sample data for demonstration purposes
+        {/* ===== MOBILE HEADER ===== */}
+        <div className="lg:hidden bg-white border-b border-gray-200 shadow-sm" style={{ height: topBarH }}>
+          <div className="h-full px-3 flex items-center justify-between">
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-lg hover:bg-gray-100">
+              {mobileMenuOpen ? <X size={20} className="text-gray-600" /> : <Menu size={20} className="text-gray-600" />}
+            </button>
+            <div className="flex items-center gap-2">
+              <BrandLogo variant="admin" size={26} />
+              <span className="font-bold text-gray-800 text-sm">{brand.appName}</span>
+            </div>
+            <div className="relative" ref={notifRef}>
+              <button onClick={() => setNotifOpen(!notifOpen)} className="p-2 rounded-lg hover:bg-gray-100 relative">
+                <Bell size={19} className="text-gray-500" />
+                {unreadCount > 0 && <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-red-500 rounded-full text-[9px] flex items-center justify-center text-white font-bold">{unreadCount > 9 ? '9+' : unreadCount}</span>}
+              </button>
+              {notifOpen && (
+                <div className="fixed right-2 w-[calc(100vw-1rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 z-[100] overflow-hidden" style={{ top: demoBannerH + topBarH + 4 }}>
+                  <div className="p-3 border-b border-gray-100 flex items-center justify-between"><h3 className="font-bold text-gray-800 text-sm">Notifications</h3><span className="text-[10px] text-gray-400">{unreadCount} active</span></div>
+                  <div className="max-h-72 overflow-y-auto">
+                    {loadingNotifs ? (<div className="p-6 text-center"><div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: c.staff, borderTopColor: 'transparent' }} /></div>)
+                    : notifications.length > 0 ? notifications.slice(0,10).map(n => (
+                      <button key={n.id} onClick={() => handleNotifClick(n.link)} className="w-full p-3 flex items-start gap-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 last:border-0">
+                        <div className={`p-1.5 rounded-lg ${n.bg} shrink-0 mt-0.5`}><n.icon size={14} className={n.color} /></div>
+                        <div className="flex-1 min-w-0"><p className="font-semibold text-gray-800 text-xs">{n.title}</p><p className="text-[11px] text-gray-500 truncate">{n.desc}</p><p className="text-[10px] text-gray-400 mt-0.5">{timeAgo(n.time)}</p></div>
+                      </button>
+                    )) : (<div className="p-6 text-center"><CheckCircle size={24} className="text-emerald-400 mx-auto mb-1" /><p className="text-sm text-gray-500">All clear!</p></div>)}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        )}
-        <header className="lg:hidden fixed top-0 left-0 right-0 z-30 p-3 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-sm" style={brand.style === 'demo' ? { top: '32px' } : {}}>
-          <div className="flex items-center justify-between">
-            <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-xl bg-gray-100 hover:bg-gray-200"><Menu size={20} className="text-gray-600" /></button>
-            <div className="flex items-center gap-2"><BrandLogo variant="admin" size={32} /><span className="font-bold text-gray-800 text-sm">{brand.appName}</span></div>
-            <NotifBell />
-          </div>
-        </header>
-        <header className="hidden lg:flex fixed top-0 left-64 right-0 z-30 p-4 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-sm items-center justify-between">
-          <h1 className="text-lg font-bold text-gray-800 capitalize">
-            {(() => { const p = location.pathname; if (p.includes('/dashboard')) return 'Dashboard'; if (p.includes('/calendar')) return 'Calendar'; if (p.includes('/participants/')) return 'Participant Details'; if (p.includes('/participants')) return 'Participants'; if (p.includes('/staff/')) return 'Staff Details'; if (p.includes('/staff')) return 'Staff'; if (p.includes('/roster/shift/')) return 'Shift Details'; if (p.includes('/roster')) return 'Roster'; if (p.includes('/notes')) return 'Notes'; if (p.includes('/incidents/')) return 'Incident Details'; if (p.includes('/incidents')) return 'Incidents'; if (p.includes('/feedback')) return 'Feedback'; if (p.includes('/ai')) return 'AI Assistant'; if (p.includes('/import')) return 'Import Data'; if (p.includes('/settings')) return 'Settings'; if (p.includes('/sample-data')) return 'Sample Data'; if (p.includes('/reset-demo')) return 'Reset Demo'; return 'Dashboard' })()}
-          </h1>
-          <div className="flex items-center gap-3"><span className="text-sm text-gray-500">{displayName}</span><NotifBell /></div>
-        </header>
-        <main className="flex-1 p-3 md:p-4 lg:p-6 pt-[72px] lg:pt-[88px]"><Outlet /></main>
+        </div>
       </div>
+
+      {/* ===== MOBILE MENU DROPDOWN ===== */}
+      {mobileMenuOpen && (
+        <>
+          <div className="fixed inset-0 bg-black/30 z-40 lg:hidden" onClick={() => setMobileMenuOpen(false)} />
+          <div className="fixed left-0 right-0 z-45 bg-white border-b border-gray-200 shadow-xl lg:hidden overflow-y-auto" style={{ top: demoBannerH + topBarH, maxHeight: `calc(100vh - ${demoBannerH + topBarH}px)` }}>
+            <nav className="p-2">
+              {navItems.map(item => {
+                const active = location.pathname.startsWith(item.path)
+                return (
+                  <NavLink key={item.id} to={item.path} onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${active ? 'text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                    style={active ? { background: c.primary } : {}}>
+                    <item.icon size={18} />
+                    {item.label}
+                  </NavLink>
+                )
+              })}
+            </nav>
+            <div className="p-3 border-t border-gray-100 flex items-center justify-between px-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: `linear-gradient(135deg, ${c.primary}, ${c.adminHover})` }}>{initials}</div>
+                <div><p className="font-semibold text-gray-800 text-sm">{displayName}</p><p className="text-[10px] text-gray-400">{displayEmail}</p></div>
+              </div>
+              <button onClick={handleLogout} className="p-2 rounded-lg hover:bg-gray-100"><LogOut size={18} className="text-gray-500" /></button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ===== MAIN CONTENT ===== */}
+      <main className="px-4 lg:px-8 py-6" style={{ paddingTop: demoBannerH + topBarH + 24 }}>
+        <Outlet />
+      </main>
+
+      {/* ===== HIDE SCROLLBAR CSS ===== */}
+      <style>{`.no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}`}</style>
     </div>
   )
 }
