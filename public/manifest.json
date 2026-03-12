@@ -1,0 +1,27 @@
+{
+  "name": "Maple Care",
+"short_name": "Maple Care",
+  "description": "Complete NDIS participant care, staff compliance, rostering, and incident management",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f97316",
+  "orientation": "portrait-primary",
+  "icons": [
+  { "src": "/pwa-192x192.png", "sizes": "192x192", "type": "image/png" },
+  { "src": "/pwa-512x512.png", "sizes": "512x512", "type": "image/png" }
+],
+  "categories": ["business", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Staff Portal",
+      "url": "/staff/portal",
+      "description": "Access staff portal"
+    },
+    {
+      "name": "Admin Dashboard",
+      "url": "/admin/dashboard",
+      "description": "Access admin dashboard"
+    }
+  ]
+}
