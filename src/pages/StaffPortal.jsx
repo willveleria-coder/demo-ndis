@@ -247,7 +247,7 @@ export default function StaffPortal() {
     async function load() {
       try {
         const { data: { user } } = await supabase.auth.getUser()
-        if (!user) { navigate('/login/staff'); return }
+        if (!user) { navigate('/enter/staff'); return }
         let staff = null
         const { data: s1 } = await supabase.from('staff').select('*').eq('auth_id', user.id).maybeSingle()
         if (s1) staff = s1
