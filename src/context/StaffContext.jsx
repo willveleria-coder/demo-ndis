@@ -53,7 +53,8 @@ export function StaffProvider({ children }) {
         if (!authUser) {
           if (mounted) {
             setLoading(false)
-            navigate('/enter/staff')
+// Don't redirect — just set loading to false and let the page handle it
+return
           }
           return
         }
@@ -114,7 +115,7 @@ export function StaffProvider({ children }) {
     }, 2000)
 
     return () => { mounted = false; clearTimeout(timeout) }
-  }, [navigate])
+}, [])
 
   /**
    * Clock in with optional GPS data
