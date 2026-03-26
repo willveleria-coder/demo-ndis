@@ -31,108 +31,158 @@ export function StaffProvider({ children }) {
     }
   }, [staffProfile?.id])
 
-useEffect(() => {
-    let mounted = true
+  // Single function that loads everything given an auth user
+  const loadStaffData = useCallback(async (authUser, mounted = { current: true }) => {
+    if (!authUser) {
+      if (mounted.current) setLoading(false)
+      return
+    }
 
-    async function load(authUser) {
-      if (!authUser) {
-        if (mounted) setLoading(false)
+    try {
+      // Get staff profile — try auth_id first, then email
+      let staff = null
+      
+      const { data: d1 } = await supabase.from('staff').select('*').eq('auth_id', authUser.id).maybeSingle()
+      staff = d1
+
+      if (!staff) {
+        const { data: d2 } = await supabase.from('staff').select('*').eq('email', authUser.email).maybeSingle()
+        staff = d2
+      }
+
+      if (!mounted.current) return
+
+      setStaffProfile(staff)
+
+      if (!staff) {
+        setLoading(false)
         return
       }
 
-      try {
-        // Get staff profile — try auth_id first, then email
-        let staff = null
-        try {
-          const { data } = await supabase.from('staff').select('*').eq('auth_id', authUser.id).maybeSingle()
-          staff = data
-        } catch (e) { console.error('staff auth_id lookup:', e) }
-
-        if (!staff) {
-          try {
-            const { data } = await supabase.from('staff').select('*').eq('email', authUser.email).maybeSingle()
-            staff = data
-          } catch (e) { console.error('staff email lookup:', e) }
-        }
-
-        if (mounted) {
-          setStaffProfile(staff)
-          setLoading(false)
-        }
-
-        if (!staff) return
-
-        // Load shifts and time off in PARALLEL
-        const shiftsPromise = supabase.from('shifts')
+      // Load shifts and time off in parallel
+      const [shiftsRes, torRes] = await Promise.allSettled([
+        supabase.from('shifts')
           .select('*, participants(id, first_name, last_name, lat, lng), shift_notes(id, mood, activities, goals_progress, concerns, recommendations, content)')
           .eq('staff_id', staff.id)
-          .order('shift_date', { ascending: true })
-          .then(({ data, error }) => {
-            if (error) {
-              return supabase.from('shifts').select('*').eq('staff_id', staff.id).order('shift_date', { ascending: true })
-            }
-            return { data }
-          })
-          .then(({ data }) => { if (mounted) setMyShifts(data || []) })
-          .catch(e => console.error('shifts load error:', e))
+          .order('shift_date', { ascending: true }),
+        supabase.from('time_off_requests')
+          .select('*').eq('staff_id', staff.id).order('created_at', { ascending: false }),
+      ])
 
-        const torPromise = supabase.from('time_off_requests')
-          .select('*').eq('staff_id', staff.id).order('created_at', { ascending: false })
-          .then(({ data }) => { if (mounted) setTimeOffRequests(data || []) })
-          .catch(e => console.error('time_off_requests load error:', e))
+      if (!mounted.current) return
 
-        await Promise.allSettled([shiftsPromise, torPromise])
-      } catch (err) {
-        console.error('StaffProvider load error:', err)
-        if (mounted) setLoading(false)
+      if (shiftsRes.status === 'fulfilled' && shiftsRes.value?.data) {
+        setMyShifts(shiftsRes.value.data)
+      } else {
+        // Fallback: simpler query without joins
+        try {
+          const { data } = await supabase.from('shifts').select('*').eq('staff_id', staff.id).order('shift_date', { ascending: true })
+          if (mounted.current) setMyShifts(data || [])
+        } catch (e) { console.error('shifts fallback error:', e) }
       }
+
+      if (torRes.status === 'fulfilled' && torRes.value?.data) {
+        setTimeOffRequests(torRes.value.data)
+      }
+
+      if (mounted.current) setLoading(false)
+    } catch (err) {
+      console.error('StaffProvider load error:', err)
+      if (mounted.current) setLoading(false)
     }
-
-    // Try current session first
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) load(session.user)
-    })
-
-    // Listen for auth changes (catches AutoLogin sign-in)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!mounted) return
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        if (session?.user) {
-          setLoading(true)
-          load(session.user)
-        }
-      }
-      if (event === 'SIGNED_OUT') {
-        setStaffProfile(null)
-        setMyShifts([])
-        setTimeOffRequests([])
-        setLoading(false)
-      }
-    })
-
-    const timeout = setTimeout(() => {
-      if (mounted) setLoading(false)
-    }, 5000)
-
-    return () => { mounted = false; clearTimeout(timeout); subscription.unsubscribe() }
   }, [])
 
-  /**
-   * Clock in with optional GPS data
-   * @param {string} id - Shift ID
-   * @param {Object} gpsData - Optional { lat, lng, distance, withinRange, overridden, overrideReason }
-   */
+  useEffect(() => {
+    const mounted = { current: true }
+    let retryTimer = null
+    let retryCount = 0
+
+    // Attempt to load with current session
+    async function init() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user && mounted.current) {
+          await loadStaffData(session.user, mounted)
+          return
+        }
+      } catch (e) {
+        console.error('getSession error:', e)
+      }
+
+      // No session yet — wait for auth state change (AutoLogin is probably still signing in)
+      // Don't set loading=false yet, let the listener handle it
+    }
+
+    init()
+
+    // Listen for auth changes — this catches AutoLogin completing
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted.current) return
+
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        if (session?.user) {
+          // Reset state for fresh load
+          setLoading(true)
+          setStaffProfile(null)
+          setMyShifts([])
+          setTimeOffRequests([])
+
+          // Retry logic — sometimes first query fails because JWT isn't propagated yet
+          const tryLoad = async () => {
+            await loadStaffData(session.user, mounted)
+            
+            // If profile loaded but no shifts, retry once after a delay
+            // This handles the race where RLS hasn't picked up the new token
+            if (mounted.current && retryCount < 2) {
+              retryCount++
+              retryTimer = setTimeout(async () => {
+                if (mounted.current) {
+                  const { data: { session: freshSession } } = await supabase.auth.getSession()
+                  if (freshSession?.user) {
+                    await loadStaffData(freshSession.user, mounted)
+                  }
+                }
+              }, 1500)
+            }
+          }
+
+          await tryLoad()
+        }
+      }
+
+      if (event === 'SIGNED_OUT') {
+        if (mounted.current) {
+          setStaffProfile(null)
+          setMyShifts([])
+          setTimeOffRequests([])
+          setLoading(false)
+        }
+      }
+    })
+
+    // Safety timeout — never stay loading forever
+    const safetyTimeout = setTimeout(() => {
+      if (mounted.current && loading) {
+        setLoading(false)
+      }
+    }, 8000)
+
+    return () => {
+      mounted.current = false
+      clearTimeout(retryTimer)
+      clearTimeout(safetyTimeout)
+      subscription.unsubscribe()
+    }
+  }, [loadStaffData])
+
   const handleClockIn = async (id, gpsData = null) => {
     try {
       const now = new Date().toISOString()
       const updatePayload = { clock_in: now, status: 'in_progress' }
-      
-      // Add GPS coordinates if available
       if (gpsData?.lat != null && gpsData?.lng != null) {
         updatePayload.clock_in_lat = gpsData.lat
         updatePayload.clock_in_lng = gpsData.lng
       }
-
       const { data, error } = await supabase.from('shifts').update(updatePayload).eq('id', id).select().maybeSingle()
       if (error) throw error
       setMyShifts(prev => prev.map(s => s.id === id ? { ...s, clock_in: now, status: 'in_progress', ...(data || {}) } : s))
@@ -142,22 +192,14 @@ useEffect(() => {
     }
   }
 
-  /**
-   * Clock out with optional GPS data
-   * @param {string} id - Shift ID
-   * @param {Object} gpsData - Optional { lat, lng, distance, withinRange, overridden, overrideReason }
-   */
   const handleClockOut = async (id, gpsData = null) => {
     try {
       const now = new Date().toISOString()
       const updatePayload = { clock_out: now, status: 'completed' }
-      
-      // Add GPS coordinates if available
       if (gpsData?.lat != null && gpsData?.lng != null) {
         updatePayload.clock_out_lat = gpsData.lat
         updatePayload.clock_out_lng = gpsData.lng
       }
-
       const { data, error } = await supabase.from('shifts').update(updatePayload).eq('id', id).select().maybeSingle()
       if (error) throw error
       setMyShifts(prev => prev.map(s => s.id === id ? { ...s, clock_out: now, status: 'completed', ...(data || {}) } : s))
