@@ -3,7 +3,7 @@ import { ArrowLeft, Send, Loader2, Trash2, Plus } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
 import { useStaff } from '../../../context/StaffContext'
 
-const LOGO_URL = 'https://ojobajaedarprixqecxr.supabase.co/storage/v1/object/public/documents/logo.png'
+const LOGO_URL = '/logo.png'
 
 function MiniSig({ value, onChange }) {
   const canvasRef = useRef(null)
@@ -100,9 +100,9 @@ export default function CashReconciliationForm({ onBack }) {
         <div className="p-6 pb-4 flex items-start justify-between border-b border-gray-100">
           <div>
             <h1 className="text-2xl font-black text-gray-900">Cash Reconciliation Form</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Maple Care Support</p>
+           <p className="text-sm text-gray-500 mt-0.5">{/* Brand name injected from config */}</p>
           </div>
-          <img src={LOGO_URL} alt="MCS Logo" className="w-14 h-14 object-contain rounded-lg" onError={e => { e.target.style.display = 'none' }} />
+          <img src={LOGO_URL} alt="Logo" className="w-14 h-14 object-contain rounded-lg" onError={e => { e.target.style.display = 'none' }} />
         </div>
 
         <div className="p-6 space-y-6">

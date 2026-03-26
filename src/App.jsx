@@ -1,22 +1,28 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
+import { useGlobalLoadingReset } from './hooks/useNavigationReset'
 import ProtectedRoute from './components/ProtectedRoute'
+import PageViewTracker from './components/PageViewTracker'
+import AutoLogin from './components/AutoLogin.jsx'
+import Goals from './pages/Goals.jsx'
 import MainLayout from './layouts/MainLayout.jsx'
 import StaffLayout from './layouts/StaffLayout.jsx'
 import { StaffProvider } from './context/StaffContext.jsx'
 import Landing from './pages/Landing.jsx'
-import AdminLogin from './pages/AdminLogin.jsx'
-import AdminSignup from './pages/AdminSignup.jsx'
-import StaffLogin from './pages/StaffLogin.jsx'
-import StaffSetup from './pages/StaffSetup.jsx'
 import StaffForms from './pages/staff/StaffForms.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import AdminCalendar from './pages/AdminCalendar.jsx'
 import Participants from './pages/Participants.jsx'
+import BudgetUtilisation from './pages/BudgetUtilisation.jsx'
+import ProgressNotes from './pages/ProgressNotes.jsx'
+import SatisfactionSurveys from './pages/SatisfactionSurveys.jsx'
 import ParticipantDetail from './pages/ParticipantDetail.jsx'
+import ComplianceDashboard from './pages/ComplianceDashboard.jsx'
 import Staff from './pages/Staff.jsx'
 import StaffDetail from './pages/StaffDetail.jsx'
 import Roster from './pages/Roster.jsx'
+import Invoicing from './pages/Invoicing.jsx'
 import ShiftDetail from './pages/ShiftDetail.jsx'
 import Incidents from './pages/Incidents.jsx'
 import IncidentDetail from './pages/IncidentDetail.jsx'
@@ -33,10 +39,33 @@ import StaffNotes from './pages/staff/StaffNotes.jsx'
 import StaffCalendar from './pages/staff/StaffCalendar.jsx'
 import StaffTimeOff from './pages/staff/StaffTimeOff.jsx'
 import StaffProfile from './pages/staff/StaffProfile.jsx'
+import StaffSwaps from './pages/staff/StaffSwaps.jsx'
+import StaffBroadcasts from './pages/staff/StaffBroadcasts.jsx'
+import StaffTrainingView from './pages/staff/StaffTrainingView.jsx'
 import StaffParticipantDocs from './pages/staff/StaffParticipantDocs.jsx'
 import StaffAvailability from './pages/staff/StaffAvailability.jsx'
-
-
+import FamilyDashboard from './pages/FamilyDashboard.jsx'
+import Medications from './pages/Medications.jsx'
+import ServiceAgreements from './pages/ServiceAgreements.jsx'
+import RestrictivePractices from './pages/RestrictivePractices.jsx'
+import StaffTraining from './pages/StaffTraining.jsx'
+import Billing from './pages/Billing.jsx'
+import BudgetTracker from './pages/BudgetTracker.jsx'
+import ShiftSwaps from './pages/ShiftSwaps.jsx'
+import Broadcasts from './pages/Broadcasts.jsx'
+import AuditLog from './pages/AuditLog.jsx'
+import ReportBuilder from './pages/ReportBuilder.jsx'
+import Integrations from './pages/Integrations.jsx'
+import AuditReport from './pages/AuditReport.jsx'
+import DemoTour from './components/DemoTour.jsx'
+import StaffLeaderboard from './pages/staff/StaffLeaderboard.jsx'
+import StaffIncidents from './pages/staff/StaffIncidents.jsx'
+import StaffMedications from './pages/staff/StaffMedications.jsx'
+import StaffHandover from './pages/staff/StaffHandover.jsx'
+import StaffTasks from './pages/staff/StaffTasks.jsx'
+import StaffMileage from './pages/staff/StaffMileage.jsx'
+import StaffExpenses from './pages/staff/StaffExpenses.jsx'
+import StaffSafety from './pages/staff/StaffSafety.jsx'
 import { Component } from 'react'
 
 class ErrorBoundary extends Component {
@@ -62,67 +91,101 @@ class ErrorBoundary extends Component {
 }
 
 function App() {
+  useGlobalLoadingReset()
+
   return (
-    <ErrorBoundary>
-    <Routes>
-      {/* Public routes - NO AuthProvider */}
-      <Route path="/" element={<Landing />} />
-      <Route path="/login/admin" element={<AdminLogin />} />
-      <Route path="/login/staff" element={<StaffLogin />} />
-      <Route path="/signup/admin" element={<AdminSignup />} />
-      <Route path="/setup/staff" element={<StaffSetup />} />
-
-      {/* Staff routes - with StaffLayout sidebar */}
-      <Route path="/staff" element={
+    <ThemeProvider>
+      <ErrorBoundary>
         <AuthProvider>
-          <ProtectedRoute requiredRole="staff">
-            <StaffProvider>
-              <StaffLayout />
-            </StaffProvider>
-          </ProtectedRoute>
-        </AuthProvider>
-      }>
-        <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<StaffDashboard />} />
-        <Route path="shifts" element={<StaffShifts />} />
-        <Route path="notes" element={<StaffNotes />} />
-        <Route path="time-off" element={<StaffTimeOff />} />
-        <Route path="calendar" element={<StaffCalendar />} />
-        <Route path="forms" element={<StaffForms />} />
-        <Route path="participant-docs" element={<StaffParticipantDocs />} />
-        <Route path="availability" element={<StaffAvailability />} />
-        <Route path="profile" element={<StaffProfile />} />
-      </Route>
+       <PageViewTracker /> 
+          <DemoTour />
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/enter/family" element={<Navigate to="/family/dashboard" replace />} />
+            <Route path="/enter/admin" element={<Navigate to="/admin/dashboard" replace />} />
+<Route path="/enter/staff" element={<Navigate to="/staff/dashboard" replace />} />
+            <Route path="/enter/:portal" element={<AutoLogin />} />
+            <Route path="/login/admin" element={<Navigate to="/enter/admin" replace />} />
+            <Route path="/login/staff" element={<Navigate to="/enter/staff" replace />} />
+            <Route path="/login/family" element={<Navigate to="/enter/family" replace />} />
+            <Route path="/signup/admin" element={<Navigate to="/enter/admin" replace />} />
+            <Route path="/setup/staff" element={<Navigate to="/enter/staff" replace />} />
+            <Route path="/family/dashboard" element={<FamilyDashboard />} />
 
-      {/* Admin routes - with MainLayout sidebar */}
-      <Route path="/admin" element={
-        <AuthProvider>
-          <ProtectedRoute requiredRole="admin">
-            <MainLayout />
-          </ProtectedRoute>
+            {/* Staff routes */}
+<Route path="/staff" element={
+  <StaffProvider>
+    <StaffLayout />
+  </StaffProvider>
+}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<StaffDashboard />} />
+              <Route path="shifts" element={<StaffShifts />} />
+              <Route path="notes" element={<StaffNotes />} />
+              <Route path="leaderboard" element={<StaffLeaderboard />} />
+              <Route path="incidents" element={<StaffIncidents />} />
+              <Route path="medications" element={<StaffMedications />} />
+              <Route path="handover" element={<StaffHandover />} />
+              <Route path="tasks" element={<StaffTasks />} />
+              <Route path="swaps" element={<StaffSwaps />} />
+              <Route path="broadcasts" element={<StaffBroadcasts />} />
+              <Route path="training" element={<StaffTrainingView />} />
+              <Route path="time-off" element={<StaffTimeOff />} />
+              <Route path="mileage" element={<StaffMileage />} />
+              <Route path="expenses" element={<StaffExpenses />} />
+              <Route path="safety" element={<StaffSafety />} />
+              <Route path="calendar" element={<StaffCalendar />} />
+              <Route path="forms" element={<StaffForms />} />
+              <Route path="participant-docs" element={<StaffParticipantDocs />} />
+              <Route path="availability" element={<StaffAvailability />} />
+              <Route path="profile" element={<StaffProfile />} />
+            </Route>
+
+            {/* Admin routes */}
+<Route path="/admin" element={
+  <MainLayout />
+}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="calendar" element={<AdminCalendar />} />
+              <Route path="participants" element={<Participants />} />
+              <Route path="participants/:id" element={<ParticipantDetail />} />
+              <Route path="invoicing" element={<Invoicing />} />
+              <Route path="staff" element={<Staff />} />
+              <Route path="staff/:id" element={<StaffDetail />} />
+              <Route path="roster" element={<Roster />} />
+              <Route path="roster/shift/:id" element={<ShiftDetail />} />
+              <Route path="budget-utilisation" element={<BudgetUtilisation />} />
+              <Route path="progress-notes" element={<ProgressNotes />} />
+              <Route path="satisfaction" element={<SatisfactionSurveys />} />
+              <Route path="incidents" element={<Incidents />} />
+              <Route path="incidents/:id" element={<IncidentDetail />} />
+              <Route path="feedback" element={<Feedback />} />
+              <Route path="notes" element={<Notes />} />
+              <Route path="ai" element={<AIAssistant />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="import" element={<Import />} />
+              <Route path="availability" element={<Availability />} />
+              <Route path="goals" element={<Goals />} />
+              <Route path="forms" element={<AdminForms />} />
+              <Route path="medications" element={<Medications />} />
+              <Route path="service-agreements" element={<ServiceAgreements />} />
+              <Route path="restrictive-practices" element={<RestrictivePractices />} />
+              <Route path="training" element={<StaffTraining />} />
+              <Route path="budget" element={<BudgetTracker />} />
+              <Route path="shift-swaps" element={<ShiftSwaps />} />
+              <Route path="broadcasts" element={<Broadcasts />} />
+              <Route path="audit-log" element={<AuditLog />} />
+              <Route path="billing" element={<Billing />} />
+              <Route path="reports" element={<ReportBuilder />} />
+              <Route path="integrations" element={<Integrations />} />
+              <Route path="audit-report" element={<AuditReport />} />
+              <Route path="compliance" element={<ComplianceDashboard />} />
+            </Route>
+          </Routes>
         </AuthProvider>
-      }>
-        <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="calendar" element={<AdminCalendar />} />
-        <Route path="participants" element={<Participants />} />
-        <Route path="participants/:id" element={<ParticipantDetail />} />
-        <Route path="staff" element={<Staff />} />
-        <Route path="staff/:id" element={<StaffDetail />} />
-        <Route path="roster" element={<Roster />} />
-        <Route path="roster/shift/:id" element={<ShiftDetail />} />
-        <Route path="incidents" element={<Incidents />} />
-        <Route path="incidents/:id" element={<IncidentDetail />} />
-        <Route path="feedback" element={<Feedback />} />
-        <Route path="notes" element={<Notes />} />
-        <Route path="ai" element={<AIAssistant />} />
-        <Route path="settings" element={<Settings />} />
-        <Route path="import" element={<Import />} />
-        <Route path="availability" element={<Availability />} />
-        <Route path="forms" element={<AdminForms />} />
-      </Route>
-    </Routes>
-    </ErrorBoundary>
+      </ErrorBoundary>
+    </ThemeProvider>
   )
 }
 

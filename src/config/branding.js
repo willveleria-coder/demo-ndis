@@ -46,38 +46,6 @@ function deriveShades(hex) {
 
 const BRAND_PRESETS = {
   veleria: {
-    appName: 'Veleria NDIS',
-    adminColor: '#f97316',   // orange-500
-    staffColor: '#14b8a6',   // teal-500
-    adminBg: '#fff7ed',      // orange-50
-    staffBg: '#f0fdfa',      // teal-50
-    adminHover: '#ea580c',   // orange-600
-    staffHover: '#0d9488',   // teal-600
-    adminRing: '#fed7aa',    // orange-200
-    staffRing: '#99f6e4',    // teal-200
-    adminText: '#9a3412',    // orange-800
-    staffText: '#115e59',    // teal-800
-    leafAdmin: '#f97316',
-    leafStaff: '#22c55e',
-    landingGradient: 'from-orange-50 to-teal-50',
-  },
-  demo: {
-    appName: 'NDIS CRM Demo',
-    adminColor: '#6366f1',   // indigo-500
-    staffColor: '#06b6d4',   // cyan-500
-    adminBg: '#eef2ff',      // indigo-50
-    staffBg: '#ecfeff',      // cyan-50
-    adminHover: '#4f46e5',   // indigo-600
-    staffHover: '#0891b2',   // cyan-600
-    adminRing: '#c7d2fe',    // indigo-200
-    staffRing: '#a5f3fc',    // cyan-200
-    adminText: '#3730a3',    // indigo-800
-    staffText: '#155e75',    // cyan-800
-    leafAdmin: '#6366f1',
-    leafStaff: '#06b6d4',
-    landingGradient: 'from-indigo-50 to-cyan-50',
-  },
-  veleria: {
     appName: 'Veleria CRM',
     adminColor: '#7c3aed',   // violet-600
     staffColor: '#3b82f6',   // blue-500
@@ -92,6 +60,22 @@ const BRAND_PRESETS = {
     leafAdmin: '#7c3aed',
     leafStaff: '#3b82f6',
     landingGradient: 'from-violet-50 to-blue-50',
+  },
+  demo: {
+    appName: 'VelCare',
+    adminColor: '#6366f1',   // indigo-500
+    staffColor: '#06b6d4',   // cyan-500
+    adminBg: '#eef2ff',      // indigo-50
+    staffBg: '#ecfeff',      // cyan-50
+    adminHover: '#4f46e5',   // indigo-600
+    staffHover: '#0891b2',   // cyan-600
+    adminRing: '#c7d2fe',    // indigo-200
+    staffRing: '#a5f3fc',    // cyan-200
+    adminText: '#3730a3',    // indigo-800
+    staffText: '#155e75',    // cyan-800
+    leafAdmin: '#6366f1',
+    leafStaff: '#06b6d4',
+    landingGradient: 'from-indigo-50 to-cyan-50',
   },
   // "custom" is the white-label preset — all colors are auto-derived
   // from just VITE_PRIMARY_COLOR and VITE_STAFF_COLOR at runtime.

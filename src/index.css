@@ -2,87 +2,70 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Prevent horizontal scroll on mobile */
-html, body {
-  overflow-x: hidden;
-  max-width: 100vw;
+/* ===== BASE MOBILE SETUP ===== */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  /* NO padding-top — fixed elements handle their own safe area offsets */
 }
 
-html, body {
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f9fafb;
   overscroll-behavior: none;
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
 }
 
 #root {
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+  background-color: #f9fafb;
 }
 
-/* Rest of your existing CSS below... */
+/* REMOVED: #root::after bottom fill — was causing the white bar.
+   Each layout now handles bottom safe area via its own paddingBottom. */
 
-/* Glass morphism effect */
+/* ===== GLASS EFFECTS ===== */
 .glass {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
 
-/* Glass solid for headers/sidebars */
 .glass-solid {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
 
-/* Pulse animation for alerts */
+/* ===== ANIMATIONS ===== */
 .pulse-slow {
   animation: pulse-slow 2s ease-in-out infinite;
 }
-
 @keyframes pulse-slow {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.85;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
 }
 
-/* Slide up animation for modals */
 @keyframes slide-up {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
-
 .animate-slide-up {
   animation: slide-up 0.3s ease-out;
 }
 
-/* Safe area for mobile */
+/* ===== UTILITIES ===== */
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* Hide scrollbar but allow scrolling */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* Line clamp utilities */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -97,41 +80,6 @@ html, body {
   overflow: hidden;
 }
 
-/* Smooth transitions */
-* {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Input focus styles */
-input:focus, 
-textarea:focus, 
-select:focus {
-  outline: none;
-  ring: 2px;
-  ring-color: #f97316;
-}
-
-/* Custom checkbox/toggle styling */
-input[type="checkbox"] {
-  cursor: pointer;
-}
-
-/* Better touch targets on mobile */
-@media (max-width: 768px) {
-  button, 
-  a, 
-  input, 
-  select, 
-  textarea {
-    min-height: 44px;
-  }
-  
-  input[type="checkbox"] {
-    min-height: auto;
-  }
-}
-
-/* Gradient text utility */
 .text-gradient {
   background: linear-gradient(135deg, #f97316 0%, #f59e0b 100%);
   -webkit-background-clip: text;
@@ -139,27 +87,100 @@ input[type="checkbox"] {
   background-clip: text;
 }
 
-/* Loading spinner */
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+/* ===== MOBILE TOUCH TARGETS ===== */
+@media (max-width: 768px) {
+  button, a, input, select, textarea {
+    min-height: 44px;
+  }
+  input[type="checkbox"] {
+    min-height: auto;
   }
 }
 
-.animate-spin {
-  animation: spin 1s linear infinite;
+/* ===== iOS TOGGLE OVERRIDE ===== */
+button[class*="w-11"][class*="h-6"][class*="rounded-full"] {
+  width: 51px !important;
+  height: 31px !important;
+  border-radius: 15.5px !important;
+  transition: background-color 0.3s ease !important;
 }
 
-/* Bounce animation for typing indicator */
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-25%);
+button[class*="w-11"][class*="h-6"][class*="rounded-full"] span,
+button[class*="w-11"][class*="h-6"][class*="rounded-full"] div {
+  width: 27px !important;
+  height: 27px !important;
+  border-radius: 50% !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2), 0 1px 1px rgba(0,0,0,0.1) !important;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+  top: 2px !important;
+}
+
+html, body {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+}
+#root {
+  overflow-x: hidden;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  background: #f5f3ff;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    background: #0f172a;
   }
 }
 
-.animate-bounce {
-  animation: bounce 0.6s infinite;
+/* ===== GLOBAL MODAL FIX =====
+   Centers ALL modals (shared Modal component + custom inline ones)
+   and prevents horizontal scroll on any popup/overlay */
+
+/* Any fixed overlay with z-index 9999+ that's a flex container = modal wrapper */
+/* Force center alignment and kill horizontal overflow */
+.fixed[class*="z-[9999]"],
+.fixed[class*="z-\\[9999\\]"] {
+  align-items: center !important;
+  justify-content: center !important;
+  overflow-x: hidden !important;
+}
+
+/* Kill horizontal scroll inside ANY modal content area */
+[class*="overflow-y-auto"] {
+  overflow-x: hidden;
+}
+
+/* Ensure modal inner containers don't overflow horizontally */
+.fixed[class*="z-[9999]"] > div:not(.absolute) {
+  overflow-x: hidden;
+  max-width: calc(100vw - 2rem);
+}
+
+/* Global: any fixed full-screen overlay should center its children */
+/* This catches custom inline modals that use position:fixed + inset:0 */
+div[style*="position: fixed"][style*="inset: 0"],
+div[style*="position:fixed"][style*="inset:0"],
+div[style*="position: fixed"][style*="z-index: 9999"],
+div[style*="position:fixed"][style*="zIndex"] {
+  overflow-x: hidden !important;
+}
+
+/* Prevent any modal body from scrolling horizontally */
+div[style*="overflow-y: auto"],
+div[style*="overflowY: auto"],
+div[style*="overflow-y:auto"] {
+  overflow-x: hidden !important;
+}
+
+/* Force rounded corners on modal containers so gradient headers look clean */
+div[style*="border-radius: 2"] > div:first-child,
+div[style*="borderRadius: 2"] > div:first-child,
+.rounded-2xl > div:first-child {
+  border-radius: inherit;
 }

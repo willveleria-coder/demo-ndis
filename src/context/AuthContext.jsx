@@ -43,10 +43,8 @@ export function AuthProvider({ children }) {
     initDone.current = true;
     let mounted = true;
 
-    // If we have cached user, don't block — refresh in background
     if (cached) {
       setLoading(false);
-      // Background refresh
       supabase.auth.getSession().then(async ({ data: { session } }) => {
         if (!mounted) return;
         if (session?.user) {
@@ -57,7 +55,6 @@ export function AuthProvider({ children }) {
         }
       }).catch(() => {});
     } else {
-      // No cache — must wait but with tight timeout
       async function init() {
         try {
           const { data: { session } } = await supabase.auth.getSession();
@@ -74,8 +71,6 @@ export function AuthProvider({ children }) {
         if (mounted) setLoading(false);
       }
       init();
-
-      // Hard timeout — 1.5s max wait
       setTimeout(() => { if (mounted) setLoading(false); }, 1500);
     }
 
@@ -95,11 +90,9 @@ export function AuthProvider({ children }) {
   }, [fetchStaffProfile]);
 
   const logout = useCallback(async () => {
-    // Clear state FIRST — instant UI response
     setUser(null);
     setCachedUser(null);
     sessionStorage.clear();
-    // Sign out in background — don't await, don't block
     supabase.auth.signOut().catch(() => {});
   }, []);
 

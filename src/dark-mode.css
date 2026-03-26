@@ -1,0 +1,211 @@
+/* ============================================================
+   DARK MODE — comprehensive overrides for the NDIS CRM
+   Activated when <html class="dark"> is set by ThemeContext
+   ============================================================ */
+
+/* ─── Base ─── */
+.dark body {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+/* ─── Page background ─── */
+.dark .min-h-screen.bg-gray-50,
+.dark .bg-gray-50 {
+  background-color: #0f172a !important;
+}
+
+/* ─── Cards / Panels / White backgrounds ─── */
+.dark .bg-white,
+.dark .bg-white\/80,
+.dark .bg-white\/70,
+.dark .bg-white\/90 {
+  background-color: #1e293b !important;
+}
+
+/* ─── Glass effect ─── */
+.dark .glass {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border-color: rgba(51, 65, 85, 0.6) !important;
+}
+
+/* ─── Subtle backgrounds ─── */
+.dark .bg-gray-50 { background-color: #162032 !important; }
+.dark .bg-gray-100 { background-color: #1e293b !important; }
+.dark .bg-gray-50\/50 { background-color: rgba(22, 32, 50, 0.5) !important; }
+.dark .bg-gray-50\/30 { background-color: rgba(22, 32, 50, 0.3) !important; }
+.dark .bg-gray-100\/50 { background-color: rgba(30, 41, 59, 0.5) !important; }
+
+/* ─── Borders ─── */
+.dark .border-gray-100,
+.dark .border-gray-200 {
+  border-color: #334155 !important;
+}
+.dark .border-gray-50 {
+  border-color: #1e293b !important;
+}
+
+/* ─── Text colors ─── */
+.dark .text-gray-900 { color: #f1f5f9 !important; }
+.dark .text-gray-800 { color: #e2e8f0 !important; }
+.dark .text-gray-700 { color: #cbd5e1 !important; }
+.dark .text-gray-600 { color: #94a3b8 !important; }
+.dark .text-gray-500 { color: #64748b !important; }
+.dark .text-gray-400 { color: #475569 !important; }
+.dark .text-gray-300 { color: #334155 !important; }
+
+/* ─── Hover states ─── */
+.dark .hover\:bg-gray-50:hover { background-color: #334155 !important; }
+.dark .hover\:bg-gray-100:hover { background-color: #334155 !important; }
+.dark .hover\:bg-gray-200:hover { background-color: #475569 !important; }
+.dark .hover\:shadow-md:hover { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.4) !important; }
+
+/* ─── Inputs, selects, textareas ─── */
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #475569 !important;
+}
+.dark input:focus,
+.dark select:focus,
+.dark textarea:focus {
+  border-color: #475569 !important;
+}
+
+/* ─── Rounded cards with border (stat cards, list items) ─── */
+.dark [class*="rounded-2xl"][class*="border"][class*="shadow"] {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+.dark [class*="rounded-xl"][class*="border"][class*="bg-white"] {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* ─── Tables ─── */
+.dark table { background-color: #1e293b !important; }
+.dark thead tr,
+.dark .bg-gray-50 tr { background-color: #162032 !important; }
+.dark tbody tr { border-color: #334155 !important; }
+.dark tbody tr:hover { background-color: rgba(51, 65, 85, 0.3) !important; }
+.dark th { color: #64748b !important; }
+.dark td { color: #cbd5e1 !important; }
+.dark td.sticky { background-color: rgba(30, 41, 59, 0.95) !important; }
+
+/* ─── Status badges — keep semantic colors but darken backgrounds ─── */
+.dark .bg-emerald-50 { background-color: rgba(16, 185, 129, 0.15) !important; }
+.dark .bg-red-50 { background-color: rgba(239, 68, 68, 0.15) !important; }
+.dark .bg-amber-50 { background-color: rgba(245, 158, 11, 0.15) !important; }
+.dark .bg-blue-50 { background-color: rgba(59, 130, 246, 0.15) !important; }
+.dark .bg-cyan-50 { background-color: rgba(6, 182, 212, 0.15) !important; }
+.dark .bg-orange-50 { background-color: rgba(249, 115, 22, 0.15) !important; }
+.dark .bg-teal-50 { background-color: rgba(20, 184, 166, 0.15) !important; }
+.dark .bg-violet-50 { background-color: rgba(139, 92, 246, 0.15) !important; }
+.dark .bg-indigo-50 { background-color: rgba(99, 102, 241, 0.15) !important; }
+.dark .bg-rose-50 { background-color: rgba(244, 63, 94, 0.15) !important; }
+.dark .bg-pink-50 { background-color: rgba(236, 72, 153, 0.15) !important; }
+.dark .bg-sky-50 { background-color: rgba(14, 165, 233, 0.15) !important; }
+
+/* Red/amber alert borders in dark */
+.dark .border-red-200 { border-color: rgba(239, 68, 68, 0.3) !important; }
+.dark .border-amber-200 { border-color: rgba(245, 158, 11, 0.3) !important; }
+.dark .border-emerald-200 { border-color: rgba(16, 185, 129, 0.3) !important; }
+.dark .border-blue-200 { border-color: rgba(59, 130, 246, 0.3) !important; }
+.dark .border-red-100 { border-color: rgba(239, 68, 68, 0.2) !important; }
+
+/* Slot badges in availability */
+.dark .bg-amber-100 { background-color: rgba(245, 158, 11, 0.2) !important; }
+.dark .bg-sky-100 { background-color: rgba(14, 165, 233, 0.2) !important; }
+.dark .bg-violet-100 { background-color: rgba(139, 92, 246, 0.2) !important; }
+.dark .bg-indigo-100 { background-color: rgba(99, 102, 241, 0.2) !important; }
+.dark .bg-cyan-100 { background-color: rgba(6, 182, 212, 0.2) !important; }
+.dark .bg-emerald-100 { background-color: rgba(16, 185, 129, 0.2) !important; }
+.dark .bg-red-100 { background-color: rgba(239, 68, 68, 0.2) !important; }
+
+/* ─── Modals ─── */
+.dark [class*="bg-white"][class*="rounded-2xl"][class*="shadow-2xl"],
+.dark [class*="bg-white"][class*="rounded-xl"][class*="shadow-xl"],
+.dark [class*="bg-white"][class*="rounded-3xl"] {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* ─── Dropdowns (notification, user menu, theme) ─── */
+.dark [class*="absolute"][class*="bg-white"][class*="rounded"] {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* ─── Dividers ─── */
+.dark .divide-gray-50 > * + *,
+.dark .divide-gray-100 > * + *,
+.dark .divide-x > * + *,
+.dark .divide-y > * + * {
+  border-color: #334155 !important;
+}
+.dark .border-t,
+.dark .border-b {
+  border-color: #334155 !important;
+}
+
+/* ─── Dashed borders ─── */
+.dark .border-dashed {
+  border-color: #475569 !important;
+}
+
+/* ─── Shadows — softer in dark mode ─── */
+.dark .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.3) !important; }
+.dark .shadow-md { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.4) !important; }
+.dark .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.4) !important; }
+.dark .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0,0,0,0.4) !important; }
+.dark .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5) !important; }
+
+/* Named shadow colors — mute in dark mode */
+.dark [class*="shadow-orange"] { --tw-shadow-color: rgba(0,0,0,0.2) !important; }
+.dark [class*="shadow-amber"] { --tw-shadow-color: rgba(0,0,0,0.2) !important; }
+.dark [class*="shadow-teal"] { --tw-shadow-color: rgba(0,0,0,0.2) !important; }
+.dark [class*="shadow-emerald"] { --tw-shadow-color: rgba(0,0,0,0.2) !important; }
+.dark [class*="shadow-red"] { --tw-shadow-color: rgba(0,0,0,0.2) !important; }
+.dark [class*="shadow-purple"] { --tw-shadow-color: rgba(0,0,0,0.2) !important; }
+
+/* ─── Backdrop blur panels ─── */
+.dark .backdrop-blur-sm {
+  background-color: rgba(30, 41, 59, 0.85) !important;
+}
+
+/* ─── Scrollbar ─── */
+.dark ::-webkit-scrollbar { background: #1e293b; }
+.dark ::-webkit-scrollbar-thumb { background: #475569; border-radius: 8px; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+/* ─── Calendar cells ─── */
+.dark [class*="min-h-"][class*="rounded"][class*="border"][class*="text-left"] {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* ─── Mobile menu overlay ─── */
+.dark .bg-black\/30 { background-color: rgba(0,0,0,0.6) !important; }
+
+/* ─── Hover transitions on list rows ─── */
+.dark .hover\:bg-gray-50\/50:hover { background-color: rgba(51, 65, 85, 0.25) !important; }
+.dark .hover\:bg-gray-100\/50:hover { background-color: rgba(51, 65, 85, 0.35) !important; }
+
+/* ─── Red/hover states for delete etc ─── */
+.dark .hover\:bg-red-50:hover { background-color: rgba(239, 68, 68, 0.15) !important; }
+.dark .hover\:bg-emerald-100:hover { background-color: rgba(16, 185, 129, 0.2) !important; }
+.dark .hover\:bg-red-100:hover { background-color: rgba(239, 68, 68, 0.2) !important; }
+.dark .hover\:bg-blue-100:hover { background-color: rgba(59, 130, 246, 0.2) !important; }
+.dark .hover\:bg-orange-100:hover { background-color: rgba(249, 115, 22, 0.2) !important; }
+
+/* ─── Print view — always light ─── */
+@media print {
+  .dark body { background: white !important; color: black !important; }
+  .dark * { background-color: transparent !important; color: black !important; border-color: #e5e7eb !important; }
+}

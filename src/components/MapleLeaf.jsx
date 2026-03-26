@@ -1,4 +1,4 @@
-const LOGO_URL = 'https://ojobajaedarprixqecxr.supabase.co/storage/v1/object/public/documents/logo.png'
+const LOGO_URL = '/logo.png'
 
 const MapleLeaf = ({ size = 20, className = '' }) => (
   <img

@@ -22,7 +22,7 @@ export function StaffProvider({ children }) {
     if (!sid) return
     try {
       const { data } = await supabase.from('shifts')
-        .select('*, participants(id, first_name, last_name), shift_notes(id, mood, activities, goals_progress, concerns, recommendations, content)')
+        .select('*, participants(id, first_name, last_name, lat, lng), shift_notes(id, mood, activities, goals_progress, concerns, recommendations, content)')
         .eq('staff_id', sid)
         .order('shift_date', { ascending: true })
       setMyShifts(data || [])
@@ -53,7 +53,7 @@ export function StaffProvider({ children }) {
         if (!authUser) {
           if (mounted) {
             setLoading(false)
-            navigate('/login/staff')
+            navigate('/enter/staff')
           }
           return
         }
@@ -74,19 +74,18 @@ export function StaffProvider({ children }) {
 
         if (mounted) {
           setStaffProfile(staff)
-          setLoading(false) // Don't wait for shifts — show the page now
+          setLoading(false)
         }
 
         if (!staff) return
 
-        // Step 3+4: Load shifts and time off in PARALLEL — don't block page
+        // Step 3+4: Load shifts and time off in PARALLEL
         const shiftsPromise = supabase.from('shifts')
-          .select('*, participants(id, first_name, last_name), shift_notes(id, mood, activities, goals_progress, concerns, recommendations, content)')
+          .select('*, participants(id, first_name, last_name, lat, lng), shift_notes(id, mood, activities, goals_progress, concerns, recommendations, content)')
           .eq('staff_id', staff.id)
           .order('shift_date', { ascending: true })
           .then(({ data, error }) => {
             if (error) {
-              // Fallback: load shifts without joins
               return supabase.from('shifts').select('*').eq('staff_id', staff.id).order('shift_date', { ascending: true })
             }
             return { data }
@@ -110,7 +109,6 @@ export function StaffProvider({ children }) {
 
     load()
 
-    // Safety net — never stuck loading
     const timeout = setTimeout(() => {
       if (mounted) setLoading(false)
     }, 2000)
@@ -118,27 +116,58 @@ export function StaffProvider({ children }) {
     return () => { mounted = false; clearTimeout(timeout) }
   }, [navigate])
 
-  const handleClockIn = async (id) => {
+  /**
+   * Clock in with optional GPS data
+   * @param {string} id - Shift ID
+   * @param {Object} gpsData - Optional { lat, lng, distance, withinRange, overridden, overrideReason }
+   */
+  const handleClockIn = async (id, gpsData = null) => {
     try {
       const now = new Date().toISOString()
-      const { data, error } = await supabase.from('shifts').update({ clock_in: now, status: 'in_progress' }).eq('id', id).select().maybeSingle()
+      const updatePayload = { clock_in: now, status: 'in_progress' }
+      
+      // Add GPS coordinates if available
+      if (gpsData?.lat != null && gpsData?.lng != null) {
+        updatePayload.clock_in_lat = gpsData.lat
+        updatePayload.clock_in_lng = gpsData.lng
+      }
+
+      const { data, error } = await supabase.from('shifts').update(updatePayload).eq('id', id).select().maybeSingle()
       if (error) throw error
       setMyShifts(prev => prev.map(s => s.id === id ? { ...s, clock_in: now, status: 'in_progress', ...(data || {}) } : s))
-    } catch (err) { console.error('Clock in failed:', err); alert('Failed to clock in: ' + (err.message || 'Unknown error')) }
+    } catch (err) {
+      console.error('Clock in failed:', err)
+      alert('Failed to clock in: ' + (err.message || 'Unknown error'))
+    }
   }
 
-  const handleClockOut = async (id) => {
+  /**
+   * Clock out with optional GPS data
+   * @param {string} id - Shift ID
+   * @param {Object} gpsData - Optional { lat, lng, distance, withinRange, overridden, overrideReason }
+   */
+  const handleClockOut = async (id, gpsData = null) => {
     try {
       const now = new Date().toISOString()
-      const { data, error } = await supabase.from('shifts').update({ clock_out: now, status: 'completed' }).eq('id', id).select().maybeSingle()
+      const updatePayload = { clock_out: now, status: 'completed' }
+      
+      // Add GPS coordinates if available
+      if (gpsData?.lat != null && gpsData?.lng != null) {
+        updatePayload.clock_out_lat = gpsData.lat
+        updatePayload.clock_out_lng = gpsData.lng
+      }
+
+      const { data, error } = await supabase.from('shifts').update(updatePayload).eq('id', id).select().maybeSingle()
       if (error) throw error
       setMyShifts(prev => prev.map(s => s.id === id ? { ...s, clock_out: now, status: 'completed', ...(data || {}) } : s))
-    } catch (err) { console.error('Clock out failed:', err); alert('Failed to clock out: ' + (err.message || 'Unknown error')) }
+    } catch (err) {
+      console.error('Clock out failed:', err)
+      alert('Failed to clock out: ' + (err.message || 'Unknown error'))
+    }
   }
 
   const handleLogout = async () => {
     sessionStorage.clear()
-    // Sign out in background — don't block navigation
     supabase.auth.signOut().catch(() => {})
     navigate('/')
   }

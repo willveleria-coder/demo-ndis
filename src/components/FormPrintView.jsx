@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { Printer, Download, X } from 'lucide-react'
 
-const LOGO_URL = 'https://ojobajaedarprixqecxr.supabase.co/storage/v1/object/public/documents/logo.png'
+const LOGO_URL = '/logo.png'
 
 // Field layout definitions for all 6 built-in forms
 const FORM_LAYOUTS = {
@@ -106,7 +106,7 @@ function PrintableForm({ data, formType, staffName, submittedAt, onClose, templa
     const content = printRef.current
     if (!content) return
     const w = window.open('', '_blank', 'width=900,height=1200')
-    w.document.write(`<!DOCTYPE html><html><head><title>${title} - Maple Care Support</title>
+    w.document.write(`<!DOCTYPE html><html><head><title>${title} - </title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1a1a1a; padding: 0; }
@@ -189,9 +189,9 @@ ${content.innerHTML}
             <div className="header" style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', borderBottom:`3px solid ${color}`, paddingBottom:'16px', marginBottom:'24px' }}>
               <div>
                 <h1 style={{ fontSize:'24px', fontWeight:900, color:'#111' }}>{title}</h1>
-                <p style={{ fontSize:'13px', color:'#6b7280', marginTop:'2px' }}>Maple Care Support</p>
+                <p style={{ fontSize:'13px', color:'#6b7280', marginTop:'2px' }}></p>
               </div>
-              <img src={LOGO_URL} alt="MCS" style={{ width:'60px', height:'60px', objectFit:'contain' }} />
+              <img src={LOGO_URL} alt="Logo" style={{ width:'60px', height:'60px', objectFit:'contain' }} />
             </div>
 
             {/* Meta info */}
@@ -261,7 +261,7 @@ ${content.innerHTML}
 
             {/* Footer */}
             <div style={{ marginTop:'32px', paddingTop:'12px', borderTop:'2px solid #e5e7eb', display:'flex', justifyContent:'space-between', fontSize:'10px', color:'#9ca3af' }}>
-              <span>Maple Care Support</span>
+              <span></span>
               <span>Printed {new Date().toLocaleDateString('en-AU', { day:'numeric', month:'long', year:'numeric' })}</span>
             </div>
           </div>
