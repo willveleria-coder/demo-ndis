@@ -439,8 +439,8 @@ export default function Landing() {
       {/* ═══ NAV BAR ═══ */}
  <header className="sticky z-50 mx-auto w-full max-w-6xl px-4 sm:px-6" style={{ ...stg(0), top: 'calc(12px + env(safe-area-inset-top, 0px))' }}>
         <Glass isDark={isDark} className="px-4 sm:px-5 py-3 flex items-center justify-between"
-          glow="rgba(124,58,237,0.06)" style={{ borderRadius: 18 }}
-        >
+  glow="rgba(124,58,237,0.06)" style={{ borderRadius: 18, background: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.2)' }}
+>
           <Link to="/" className="flex items-center gap-2.5 group shrink-0">
             <img src="/logo.png" alt={brand.appName} className="w-9 h-9 object-contain drop-shadow-sm" />
             <div className="leading-tight">
@@ -516,8 +516,8 @@ export default function Landing() {
 
 
       {/* ═══ HERO ═══ */}
-      <section className="relative z-10" style={stg(1)}>
-        <div className="px-4 sm:px-6 md:px-10 lg:px-16 pt-8 sm:pt-12 md:pt-16 pb-10 sm:pb-14 md:pb-16 relative overflow-hidden"
+      <section className="relative z-10 -mt-16" style={stg(1)}>
+        <div className="px-4 sm:px-6 md:px-10 lg:px-16 pt-36 sm:pt-40 md:pt-32 pb-10 sm:pb-14 md:pb-16 relative overflow-hidden"
           style={{ background: DS.gradHero }}
         >
           {/* Decorative */}

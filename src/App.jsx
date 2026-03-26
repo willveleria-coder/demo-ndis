@@ -3,7 +3,6 @@ import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { useGlobalLoadingReset } from './hooks/useNavigationReset'
 import ProtectedRoute from './components/ProtectedRoute'
-import PageViewTracker from './components/PageViewTracker'
 import AutoLogin from './components/AutoLogin.jsx'
 import Goals from './pages/Goals.jsx'
 import MainLayout from './layouts/MainLayout.jsx'
@@ -97,7 +96,7 @@ function App() {
     <ThemeProvider>
       <ErrorBoundary>
         <AuthProvider>
-       <PageViewTracker /> 
+ {/* <PageViewTracker /> */}
           <DemoTour />
           <Routes>
             <Route path="/" element={<Landing />} />
