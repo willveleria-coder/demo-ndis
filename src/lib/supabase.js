@@ -14,6 +14,5 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     storageKey: 'ndis-crm-auth',
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    lock: noopLock,
   }
 });
