@@ -31,35 +31,17 @@ export function StaffProvider({ children }) {
     }
   }, [staffProfile?.id])
 
-  useEffect(() => {
+useEffect(() => {
     let mounted = true
 
-    async function load() {
+    async function load(authUser) {
+      if (!authUser) {
+        if (mounted) setLoading(false)
+        return
+      }
+
       try {
-        // Step 1: Get auth user
-        let authUser = null
-        try {
-          const { data: { session } } = await supabase.auth.getSession()
-          authUser = session?.user || null
-        } catch (e) { console.error('getSession failed:', e) }
-
-        if (!authUser) {
-          try {
-            const { data: { user } } = await supabase.auth.getUser()
-            authUser = user
-          } catch (e) { console.error('getUser failed:', e) }
-        }
-
-        if (!authUser) {
-          if (mounted) {
-            setLoading(false)
-// Don't redirect — just set loading to false and let the page handle it
-return
-          }
-          return
-        }
-
-        // Step 2: Get staff profile — try auth_id first, then email
+        // Get staff profile — try auth_id first, then email
         let staff = null
         try {
           const { data } = await supabase.from('staff').select('*').eq('auth_id', authUser.id).maybeSingle()
@@ -80,7 +62,7 @@ return
 
         if (!staff) return
 
-        // Step 3+4: Load shifts and time off in PARALLEL
+        // Load shifts and time off in PARALLEL
         const shiftsPromise = supabase.from('shifts')
           .select('*, participants(id, first_name, last_name, lat, lng), shift_notes(id, mood, activities, goals_progress, concerns, recommendations, content)')
           .eq('staff_id', staff.id)
@@ -100,22 +82,40 @@ return
           .catch(e => console.error('time_off_requests load error:', e))
 
         await Promise.allSettled([shiftsPromise, torPromise])
-
       } catch (err) {
         console.error('StaffProvider load error:', err)
-      } finally {
         if (mounted) setLoading(false)
       }
     }
 
-    load()
+    // Try current session first
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) load(session.user)
+    })
+
+    // Listen for auth changes (catches AutoLogin sign-in)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        if (session?.user) {
+          setLoading(true)
+          load(session.user)
+        }
+      }
+      if (event === 'SIGNED_OUT') {
+        setStaffProfile(null)
+        setMyShifts([])
+        setTimeOffRequests([])
+        setLoading(false)
+      }
+    })
 
     const timeout = setTimeout(() => {
       if (mounted) setLoading(false)
-    }, 2000)
+    }, 5000)
 
-    return () => { mounted = false; clearTimeout(timeout) }
-}, [])
+    return () => { mounted = false; clearTimeout(timeout); subscription.unsubscribe() }
+  }, [])
 
   /**
    * Clock in with optional GPS data
